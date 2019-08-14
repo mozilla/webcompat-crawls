@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: crawl
+spec:
+  # adjust for parallelism
+  parallelism: 50
+  backoffLimit: 10000 # to avoid crawls failing due to sporadic socket-induced crashes
+  template:
+    metadata:
+      name: openwpm-crawl
+    spec:
+      containers:
+      - name: openwpm-crawl
+        image: docker.io/openwpm/openwpm:commit-1b2313349740e036070807036f56df49221dd6d2
+        command: ["python"]
+        args: ["crawler.py"]
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-config
+              key: aws_access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-config
+              key: aws_secret_access_key
+        - name: NUM_BROWSERS
+          value: '1'
+        - name: REDIS_HOST
+          value: '$REDIS_HOST'
+        - name: REDIS_QUEUE_NAME
+          value: 'crawl-queue'
+        - name: CRAWL_DIRECTORY
+          value: '$CRAWL_DIRECTORY'
+        - name: S3_BUCKET
+          value: 'openwpm-crawls'
+        - name: HTTP_INSTRUMENT
+          value: '1'
+        - name: COOKIE_INSTRUMENT
+          value: '1'
+        - name: NAVIGATION_INSTRUMENT
+          value: '1'
+        - name: JS_INSTRUMENT
+          value: '1'
+        - name: SAVE_CONTENT
+          value: 'script,stylesheet,main_frame,sub_frame'
+        - name: DWELL_TIME
+          value: '10'
+        - name: TIMEOUT
+          value: '60'
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: sentry-config
+              key: sentry_dsn
+        resources:
+          # these are taken at face value by the autoscaler, so they should match actual
+          # resources required by any single instance/container as good as possible
+          # see: https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-autoscaler
+          # tip: observe `kubectl top nodes` during auto-scaled crawls to get an idea of how
+          # resources are being utilized
+          requests:
+            cpu: 750m
+          limits:
+            cpu: 1
+      restartPolicy: OnFailure

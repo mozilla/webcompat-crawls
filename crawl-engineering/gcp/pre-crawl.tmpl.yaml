@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pre-crawl
+spec:
+  parallelism: 1
+  template:
+    metadata:
+      name: pre-crawl
+    spec:
+      containers:
+      - name: pre-crawl
+        image: gcr.io/srg-team-sandbox/crawl-prep
+        command: ["/opt/crawl-prep/s3-pre-crawl.sh"]
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-config
+              key: aws_access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-config
+              key: aws_secret_access_key
+        - name: SEED_LIST_PATH
+          value: '$CRAWL_DIRECTORY/seed_list.csv'
+        - name: SEED_LIST_IS_UNRANKED
+          value: '0'
+        - name: CRAWL_RESULTS_OUTPUT_PATH
+          value: '$CRAWL_DIRECTORY/pre_crawl_results.csv'
+        - name: S3_BUCKET
+          value: 'srg-team-bucket'
+        - name: CONCURRENT_REQUESTS
+          value: '1000'
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: sentry-config
+              key: sentry_dsn
+        resources:
+          requests:
+            cpu: 750m
+          limits:
+            cpu: 1
+      restartPolicy: OnFailure
