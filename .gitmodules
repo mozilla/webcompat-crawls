@@ -6,3 +6,7 @@
 	path = crawl-engineering/OpenWPM
 	url = https://github.com/mozilla/OpenWPM.git
 	branch = webcompat-instrumentation
+[submodule "crawl-prep"]
+	path = crawl-prep
+	url = https://github.com/mozilla/crawl-prep.git
+	branch = master
