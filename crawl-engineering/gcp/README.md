@@ -110,8 +110,7 @@ export REDIS_HOST=10.0.0.3
 
 Then load the site into redis:
 ```
-TODO webcompat/webcompat-crawls/crawl-prep/lists/TRANCO-canonical-top1m_24-07-2019.csv
-../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue ../../crawl-prep/lists/tranco_10k_alexa_10k_union.unlimited_depth_max_10_links.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue ../../lists/tranco_500.ranked.csv
 ```
 
 #### Configure the crawl
