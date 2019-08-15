@@ -29,11 +29,11 @@ spec:
         - name: NUM_BROWSERS
           value: '1'
         - name: REDIS_HOST
-          value: '$REDIS_HOST'
+          value: '10.0.0.3'
         - name: REDIS_QUEUE_NAME
           value: 'crawl-queue'
         - name: CRAWL_DIRECTORY
-          value: '$CRAWL_DIRECTORY'
+          value: '2019_08_15_webcompat_crawl_test_1'
         - name: S3_BUCKET
           value: 'openwpm-crawls'
         - name: HTTP_INSTRUMENT
