@@ -1,6 +1,6 @@
 # Webcompat Crawls
 
-Configuration and instructions used to crawls top sites using a specially instrumented version of Firefox gathering information about 
+Configuration and instructions used to crawls top sites using a specially instrumented version of Firefox gathering data for Webcompat analysis.
 
 ## Generate the seed list via a series of pre-crawls
 
