@@ -1,20 +1,27 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: crawl
+  name: crawl-b
 spec:
   # adjust for parallelism
   parallelism: 50
-  backoffLimit: 10000 # to avoid crawls failing due to sporadic socket-induced crashes
+  backoffLimit: 10000 # to avoid crawls failing due to sporadic worker crashes
   template:
     metadata:
       name: openwpm-crawl
     spec:
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
       containers:
       - name: openwpm-crawl
-        image: docker.io/openwpm/openwpm:commit-d5b8b72120a20ab566c3e25165f9efa4edfef67f
+        image: docker.io/openwpm/openwpm:commit-764e433a981935c744b76208c948bdd3d2dfe45e
         command: ["python"]
         args: ["crawler.py"]
+        volumeMounts:
+          - mountPath: /dev/shm
+            name: dshm
         env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
@@ -26,14 +33,12 @@ spec:
             secretKeyRef:
               name: aws-config
               key: aws_secret_access_key
-        - name: NUM_BROWSERS
-          value: '1'
         - name: REDIS_HOST
           value: '10.0.0.3'
         - name: REDIS_QUEUE_NAME
-          value: 'crawl-queue'
+          value: 'crawl-queue-b'
         - name: CRAWL_DIRECTORY
-          value: '2019_08_15_webcompat_crawl_test_1'
+          value: '2019_08_31_webcompat_test_crawls_2/b_chrome_ua'
         - name: S3_BUCKET
           value: 'openwpm-crawls'
         - name: HTTP_INSTRUMENT
@@ -53,12 +58,22 @@ spec:
         - name: DWELL_TIME
           value: '10'
         - name: TIMEOUT
-          value: '60'
+          value: '120'
         - name: SENTRY_DSN
           valueFrom:
             secretKeyRef:
               name: sentry-config
               key: sentry_dsn
+        - name: LOG_LEVEL_CONSOLE
+          value: 'DEBUG'
+        - name: LOG_LEVEL_FILE
+          value: 'DEBUG'
+        - name: LOG_LEVEL_SENTRY_BREADCRUMB
+          value: 'DEBUG'
+        - name: LOG_LEVEL_SENTRY_EVENT
+          value: 'ERROR'
+        - name: MAX_JOB_RETRIES
+          value: '2'
         resources:
           # these are taken at face value by the autoscaler, so they should match actual
           # resources required by any single instance/container as good as possible
@@ -67,6 +82,7 @@ spec:
           # resources are being utilized
           requests:
             cpu: 750m
+            memory: 1000Mi
           limits:
             cpu: 1
       restartPolicy: OnFailure

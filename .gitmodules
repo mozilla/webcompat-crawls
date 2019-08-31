@@ -1,7 +1,7 @@
 [submodule "crawl-engineering/openwpm-crawler"]
 	path = crawl-engineering/openwpm-crawler
 	url = https://github.com/mozilla/openwpm-crawler
-	branch = crlf-line-endings
+	branch = master
 [submodule "crawl-engineering/OpenWPM"]
 	path = crawl-engineering/OpenWPM
 	url = https://github.com/mozilla/OpenWPM.git

@@ -23,13 +23,13 @@ Also, make sure that all git submodules are checked out properly.
 ## (One time) Provision GCP Resources
 
 ```
-gcloud login
+gcloud auth login --no-launch-browser
 gcloud config set project $PROJECT
 gcloud config set compute/zone us-central1-f
 gcloud components install kubectl
 ../openwpm-crawler/deployment/gcp/start_gke_cluster.sh crawl
 gcloud container clusters get-credentials crawl
-gcloud redis instances create crawlredis --size=1 --region=us-central1-f --redis-version=redis_4_0
+gcloud redis instances create crawlredis --size=1 --region=us-central1 --redis-version=redis_4_0
 ```
 
 ## (Optional) Configure sentry credentials
@@ -83,7 +83,7 @@ After running this, set the `$CRAWL_CONFIG_YAML` as per the output from the abov
 
 #### (Optional) Build and push Docker images to GCR
 
-If one of [the pre-built OpenWPM Docker images](https://hub.docker.com/r/openwpm/openwpm/tags) are not sufficient:
+If none of [the pre-built OpenWPM Docker images](https://hub.docker.com/r/openwpm/openwpm/tags) are sufficient:
 ```
 cd ../OpenWPM; docker build -t gcr.io/$PROJECT/openwpm .; cd -
 gcloud auth configure-docker
@@ -110,20 +110,18 @@ export REDIS_HOST=10.0.0.3
 
 Then load the site into redis:
 ```
-../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue ../../lists/tranco_20190814_top500.ranked.csv
-```
-
-Note: The tranco 500 list was prepared based on a full Tranco list (created on 14 August 2019, available at https://tranco-list.eu/list/W8J9) as per follows:
-
-```
-cat lists/top-1m.csv | head -n 500 > lists/tranco_20190814_top500.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-a ../../lists/tranco_20190814_top5000.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-b ../../lists/tranco_20190814_top5000.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-c ../../lists/tranco_20190814_top5000.ranked.csv
 ```
 
 #### Configure the crawl
 
 This will set you up with a new crawl config that you can customize before running the crawl. Change `foo` to reflect the purpose of the crawl. It will be prefixed automatically by today's date.
 ```
-../new-crawl-directory.sh gcp webcompat_crawl_test_1
+../new-crawl-directory.sh gcp webcompat_test_crawls_2/a_control
+../new-crawl-directory.sh gcp webcompat_test_crawls_2/b_chrome_ua
+../new-crawl-directory.sh gcp webcompat_test_crawls_2/c_blocking_addons
 ```
 After running this, set the `$CRAWL_CONFIG_YAML` as per the output from the above script.
 
@@ -131,10 +129,16 @@ After running this, set the `$CRAWL_CONFIG_YAML` as per the output from the abov
 
 Some nodes including the master node can become temporarily unavailable  during cluster auto-scaling operations. When larger new crawls are started, this can cause disruptions for a couple of minutes after the crawl has started.
 
-To avoid this, set the amount of nodes (to, say, 5) before starting the crawl:
+To avoid this, set the amount of nodes before starting the crawl:
 
 ```
-gcloud container clusters resize crawl --num-nodes=5
+gcloud container clusters resize crawl --num-nodes=15
+```
+
+Another useful practice is to [manually upgrade the cluster master if necessary](https://cloud.google.com/kubernetes-engine/docs/how-to/upgrading-a-cluster#upgrade_master) before running a crawl, since otherwise this may be performed automatically right after executing your crawls, causing downtime:
+
+```
+gcloud container clusters upgrade crawl --master
 ```
 
 ## Start the crawl
@@ -154,17 +158,23 @@ kubectl exec -it redis-box -- sh -c "redis-cli -h $REDIS_HOST"
 
 Current length of the queue:
 ```
-llen crawl-queue
+llen crawl-queue-a
+llen crawl-queue-b
+llen crawl-queue-c
 ```
 
 Amount of queue items marked as processing:
 ```
-llen crawl-queue:processing 
+llen crawl-queue-a:processing
+llen crawl-queue-b:processing
+llen crawl-queue-c:processing
 ```
 
 Contents of the queue:
 ```
-lrange crawl-queue 0 -1
+lrange crawl-queue-a 0 -1
+lrange crawl-queue-b 0 -1
+lrange crawl-queue-c 0 -1
 ```
 
 #### Crawl progress and logs
