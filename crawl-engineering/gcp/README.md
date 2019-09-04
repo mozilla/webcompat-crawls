@@ -110,18 +110,18 @@ export REDIS_HOST=10.0.0.3
 
 Then load the site into redis:
 ```
-../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-a ../../lists/tranco_20190814_top5000.ranked.csv
-../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-b ../../lists/tranco_20190814_top5000.ranked.csv
-../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-c ../../lists/tranco_20190814_top5000.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-a ../../crawl-prep/lists/tranco_10k_alexa_10k_union.unlimited_depth_max_10_links.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-b ../../crawl-prep/lists/tranco_10k_alexa_10k_union.unlimited_depth_max_10_links.ranked.csv
+../openwpm-crawler/deployment/load_site_list_into_redis.sh crawl-queue-c ../../crawl-prep/lists/tranco_10k_alexa_10k_union.unlimited_depth_max_10_links.ranked.csv
 ```
 
 #### Configure the crawl
 
 This will set you up with a new crawl config that you can customize before running the crawl. Change `foo` to reflect the purpose of the crawl. It will be prefixed automatically by today's date.
 ```
-../new-crawl-directory.sh gcp webcompat_test_crawls_2/a_control
-../new-crawl-directory.sh gcp webcompat_test_crawls_2/b_chrome_ua
-../new-crawl-directory.sh gcp webcompat_test_crawls_2/c_blocking_addons
+../new-crawl-directory.sh gcp webcompat_main_crawls_1/a_control
+../new-crawl-directory.sh gcp webcompat_main_crawls_1/b_chrome_ua
+../new-crawl-directory.sh gcp webcompat_main_crawls_1/c_blocking_addons
 ```
 After running this, set the `$CRAWL_CONFIG_YAML` as per the output from the above script.
 
@@ -132,7 +132,7 @@ Some nodes including the master node can become temporarily unavailable  during 
 To avoid this, set the amount of nodes before starting the crawl:
 
 ```
-gcloud container clusters resize crawl --num-nodes=15
+gcloud container clusters resize crawl --num-nodes=30
 ```
 
 Another useful practice is to [manually upgrade the cluster master if necessary](https://cloud.google.com/kubernetes-engine/docs/how-to/upgrading-a-cluster#upgrade_master) before running a crawl, since otherwise this may be performed automatically right after executing your crawls, causing downtime:

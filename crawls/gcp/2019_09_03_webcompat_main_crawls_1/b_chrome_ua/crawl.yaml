@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: crawl
+  name: crawl-b
 spec:
   # adjust for parallelism
   parallelism: 100
@@ -34,11 +34,11 @@ spec:
               name: aws-config
               key: aws_secret_access_key
         - name: REDIS_HOST
-          value: '$REDIS_HOST'
+          value: '10.0.0.3'
         - name: REDIS_QUEUE_NAME
-          value: 'crawl-queue'
+          value: 'crawl-queue-b'
         - name: CRAWL_DIRECTORY
-          value: '$CRAWL_DIRECTORY'
+          value: '2019_09_03_webcompat_main_crawls_1/b_chrome_ua'
         - name: S3_BUCKET
           value: 'openwpm-crawls'
         - name: HTTP_INSTRUMENT
@@ -53,6 +53,8 @@ spec:
           value: 'webcompat'
         - name: SAVE_CONTENT
           value: 'script,stylesheet,main_frame,sub_frame'
+        - name: PREFS
+          value: '{"general.useragent.override": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36"}'
         - name: DWELL_TIME
           value: '10'
         - name: TIMEOUT

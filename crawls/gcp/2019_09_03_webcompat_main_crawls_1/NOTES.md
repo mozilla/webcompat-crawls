@@ -1,0 +1,1 @@
+The seed list used for these crawls were based on Tranco and Alexa 10k, pre-crawled to generate a seed list of size 108207 URLs. Full documentation of this process available in https://github.com/mozilla/crawl-prep/
